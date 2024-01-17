@@ -1,6 +1,6 @@
-# 最新のkdig in Debian stable
+# kdig in Debian stable
 
-最新(Debian sid)のkdigをDebian stableでbuildしたimage
+kdigをDebian stableでbuildしたimage
 
 ## usage
 ```
