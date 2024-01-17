@@ -1,8 +1,8 @@
 #!/bin/bash
 
 DEBIAN_REL=bookworm
-KNOT_VER=3.3.2
-KNOT_REL=1
+KNOT_VER=3.3.3
+KNOT_REL=2
 
 function usage () {
   echo "Usage: ${0} [-l] [-p]"
@@ -35,17 +35,19 @@ image_tag=${KNOT_VER}
 
 # build
 ## PUSH: false
-docker build --progress plain --platform linux/amd64,linux/arm64 -t smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
-docker build --load -t smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
-
-if [ "${LATEST}" == "true" ] ; then
-  docker build --platform linux/amd64,linux/arm64 -t smbd/${image_name}:latest --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
-  docker build --load -t smbd/${image_name}:latest --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
-fi
-
-if [ "${PUSH}" == "true" ] ; then
-  docker build --push --platform linux/amd64,linux/arm64 -t smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
-  if [ "${LATEST}" == "true" ] ; then
-    docker build --push --platform linux/amd64,linux/arm64 -t smbd/${image_name}:latest --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
-  fi
-fi
+###docker build --progress plain --platform linux/amd64,linux/arm64 -t smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
+###docker build --load -t smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
+###
+###if [ "${LATEST}" == "true" ] ; then
+###  docker build --platform linux/amd64,linux/arm64 -t smbd/${image_name}:latest --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
+###  docker build --load -t smbd/${image_name}:latest --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
+###fi
+###
+###if [ "${PUSH}" == "true" ] ; then
+###  docker build --push --platform linux/amd64,linux/arm64 -t smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
+###  if [ "${LATEST}" == "true" ] ; then
+###    docker build --push --platform linux/amd64,linux/arm64 -t smbd/${image_name}:latest --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "docker build faild. abort."
+###  fi
+###fi
+podman build --platform linux/amd64,linux/arm64 --format docker --manifest smbd/${image_name}:${image_tag} --build-arg DEBIAN_REL=${DEBIAN_REL} --build-arg KNOT_VER=${KNOT_VER} --build-arg KNOT_REL=${KNOT_REL} . || abort "podman build failed"
+podman manifest inspect smbd/${image_name}:${image_tag} || abort "podman"
