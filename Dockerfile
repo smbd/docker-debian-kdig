@@ -3,7 +3,7 @@
 ARG DEBIAN_REL="bookworm"
 FROM debian:${DEBIAN_REL}-slim as builder
 
-ARG KNOT_VER=3.3.3
+ARG KNOT_VER=3.3.4
 
 RUN echo "deb-src http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid-src.list
 
