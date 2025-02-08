@@ -1,33 +1,17 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1
 
-ARG DEBIAN_REL="bookworm"
-FROM debian:${DEBIAN_REL}-slim as builder
+FROM debian:${DEBIAN_REL:-bookworm}-slim
 
 ARG KNOT_VER=3.4.4
 
-RUN echo "deb-src http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid-src.list
-
-RUN apt-get -qq update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential devscripts curl \
- && apt build-dep -y knot
-
-WORKDIR /tmp
-RUN DSC_FILE=$(curl -sSL "http://deb.debian.org/debian/pool/main/k/knot/?C=M;O=D" | grep -P -o "href=\"knot_${KNOT_VER}-\d+.dsc\">" | head -1 | sed -e 's/^href="//' -e 's/">$//') \
-  && dget http://deb.debian.org/debian/pool/main/k/knot/${DSC_FILE}
-
-WORKDIR /tmp/knot-${KNOT_VER}
-RUN DEB_BUILD_OPTIONS=noddebs dpkg-buildpackage -r -uc -b
-
-RUN mkdir /tmp/copy
-RUN cp /tmp/knot-dnsutils*.deb /tmp/libknot*.deb /tmp/libdnssec*.deb /tmp/libzscanner*.deb /tmp/copy
-RUN rm /tmp/copy/libknot-dev_*.deb
-
-ARG DEBIAN_REL="bookworm"
-FROM debian:${DEBIAN_REL}-slim
-
-COPY --from=builder /tmp/copy /tmp
-
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/*.deb
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get -qq update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --no-install-suggests ca-certificates wget \
+    && wget -q -O /usr/share/keyrings/cznic-labs-pkg.gpg https://pkg.labs.nic.cz/gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/cznic-labs-pkg.gpg] https://pkg.labs.nic.cz/knot-dns bookworm main" > /etc/apt/sources.list.d/cznic-labs-knot-dns.list \
+    && apt-get -qq update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --no-install-suggests knot-dnsutils=${KNOT_VER}-cznic.1~bookworm \
+    && apt-get purge --autoremove -y wget
 
 ENTRYPOINT ["/usr/bin/kdig"]
