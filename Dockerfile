@@ -3,11 +3,11 @@
 ARG DEBIAN_REL="bookworm"
 FROM debian:${DEBIAN_REL}-slim as builder
 
-ARG KNOT_VER=3.3.5
+ARG KNOT_VER=3.4.4
 
 RUN echo "deb-src http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid-src.list
 
-RUN apt-get update \
+RUN apt-get -qq update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential devscripts curl \
  && apt build-dep -y knot
 
